@@ -1,48 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import PhoneLogin from "./component/PhoneLogin";
+import PatientForm from "./pages/PatientForm";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [page, setPage] = useState("login");
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
   const handleAuth = (userData) => {
-    // Save user in state
     setUser(userData);
-
-    // Save in localStorage (so login persists after refresh)
     localStorage.setItem("user", JSON.stringify(userData));
-
-    setPage("dashboard");
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    setPage("login");
   };
 
   return (
-    <div>
-      {!user && (
-        <>
-          <button onClick={() => setPage("login")}>Login</button>
-          <button onClick={() => setPage("signup")}>Signup</button>
-        </>
-      )}
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            !user ? (
+              <>
+                <Login onAuth={handleAuth} />
+                <PhoneLogin onAuth={handleAuth} />
+              </>
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
+        />
+        <Route
+          path="/signup"
+          element={!user ? <Signup onAuth={handleAuth} /> : <Navigate to="/dashboard" />}
+        />
 
-      {page === "login" && (
-        <>
-          <Login onAuth={handleAuth} />
-          <PhoneLogin onAuth={handleAuth} />
-        </>
-      )}
+        {/* Private Routes */}
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/patient-form"
+          element={user ? <PatientForm user={user} /> : <Navigate to="/login" />}
+        />
 
-      {page === "signup" && <Signup onAuth={handleAuth} />}
-      {page === "dashboard" && <Dashboard user={user} onLogout={handleLogout} />}
-    </div>
+        {/* Redirect root to login */}
+        <Route path="/" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
 }
 

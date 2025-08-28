@@ -2,17 +2,24 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
-        name: { type: String },
-        email: { type: String, unique: true, sparse: true }, // sparse → allows multiple docs with null email
-        password: { type: String },
+        // Basic info
+        name: { type: String, required: true },
+        dob: { type: Date },                     // Date of Birth
+        age: { type: Number },                   // Optional if DOB is given
+        gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
+        email: { type: String, unique: true, sparse: true }, // Optional email
+        phone: { type: String, unique: true, sparse: true }, // Optional phone
 
-        phone: { type: String, unique: true, sparse: true },
+        // Address for remote follow-up
+        address: { type: String },
 
-        role: { type: String, enum: ["patient", "doctor"], default: "patient" },
-
-        // OTP-based login
-        otp: { type: String },
+        // Authentication
+        password: { type: String },              // For password login
+        otp: { type: String },                   // For OTP login
         otpExpires: { type: Date },
+
+        // Role
+        role: { type: String, enum: ["patient", "doctor"], default: "patient" },
     },
     { timestamps: true }
 );
