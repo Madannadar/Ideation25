@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import PhoneLogin from "./component/PhoneLogin";
 import PatientForm from "./pages/PatientForm";
 
+
 function App() {
   const [user, setUser] = useState(null);
 
