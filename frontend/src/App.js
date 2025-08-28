@@ -6,24 +6,33 @@ import Dashboard from "./pages/Dashboard";
 import PhoneLogin from "./component/PhoneLogin";
 import PatientForm from "./pages/PatientForm";
 
-
 function App() {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
 
-  // Load user from localStorage on mount
+  // Load user + token from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+
     if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedToken) setToken(storedToken);
   }, []);
 
-  const handleAuth = (userData) => {
+  const handleAuth = (userData, userToken) => {
     setUser(userData);
+    setToken(userToken);
+
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userToken);
   };
 
   const handleLogout = () => {
     setUser(null);
+    setToken(null);
+
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
@@ -35,8 +44,8 @@ function App() {
           element={
             !user ? (
               <>
-                <Login onAuth={handleAuth} />
-                <PhoneLogin onAuth={handleAuth} />
+                <Login onAuth={(u) => handleAuth(u, localStorage.getItem("token"))} />
+                <PhoneLogin onAuth={(u) => handleAuth(u, localStorage.getItem("token"))} />
               </>
             ) : (
               <Navigate to="/dashboard" />
@@ -45,17 +54,27 @@ function App() {
         />
         <Route
           path="/signup"
-          element={!user ? <Signup onAuth={handleAuth} /> : <Navigate to="/dashboard" />}
+          element={
+            !user ? (
+              <Signup onAuth={(u) => handleAuth(u, localStorage.getItem("token"))} />
+            ) : (
+              <Navigate to="/dashboard" />
+            )
+          }
         />
 
         {/* Private Routes */}
         <Route
           path="/dashboard"
-          element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+          element={
+            user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          }
         />
         <Route
           path="/patient-form"
-          element={user ? <PatientForm user={user} /> : <Navigate to="/login" />}
+          element={
+            user ? <PatientForm user={user} token={token} /> : <Navigate to="/login" />
+          }
         />
 
         {/* Redirect root to login */}

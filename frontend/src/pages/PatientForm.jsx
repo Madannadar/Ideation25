@@ -62,10 +62,32 @@ export default function PatientForm({ onSubmit }) {
         setForm((prev) => ({ ...prev, attachments: [...e.target.files] }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit(form);
+
+        try {
+            const res = await fetch("http://localhost:5000/api/patients", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ attach token
+                },
+                body: JSON.stringify(form),
+            });
+
+            const data = await res.json();
+            console.log("Saved:", data);
+
+            if (!res.ok) {
+                alert(data.msg || "Error saving patient form");
+            }
+        } catch (err) {
+            console.error("Request failed:", err);
+            alert("Network error while saving form");
+        }
     };
+
+
 
     return (
         <form
